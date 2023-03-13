@@ -1,0 +1,461 @@
+
+
+<!-- <!DOCTYPE html>
+<html>
+
+<head>
+  <title>ROBOT WEBSOCKET COMMUNICATION</title>
+</head>
+
+<body>
+  <h1>Key Press Sender</h1>
+  <p>Enter the public IP address and port number of the router, then press the "Connect" button to establish a
+    connection to the Raspberry Pi, then press any key on the keyboard to send it to the Raspberry Pi:</p>
+  <p>Public IP Address: <input type="text" id="ip-address" value="118.200.36.2"></p>
+  <p>Port Number: <input type="text" id="port-number" value="8000"></p>
+  <button id="connect-button" onclick="connect()">Connect</button>
+  <button id="led-on-button" onclick="sendMessage('o')" disabled>Turn On LED</button>
+  <button id="led-off-button" onclick="sendMessage('f')" disabled>Turn Off LED</button>
+  <button id="close-button" onclick="sendMessage(String.fromCharCode(27))" disabled>Close Connection</button>
+  <button id="led1-button" onclick="sendMessage('1')" disabled>Floor 1</button>
+  <button id="led2-button" onclick="sendMessage('2')" disabled>Floor 2</button>
+  <br>
+  <br>
+  <p id="connection-status">Connection status: Not connected</p>
+  <p id="arrival-status"></p>
+
+
+  <script>
+    let websocket = null;
+
+    async function connect() {
+      // Get the IP address and port number from the input fields
+      let ipAddress = document.getElementById('ip-address').value;
+      let portNumber = document.getElementById('port-number').value;
+
+      // Connect to the Raspberry Pi's web socket server
+      websocket = new WebSocket(`ws://${ipAddress}:${portNumber}`);
+
+      // Set the connection status
+      document.getElementById('connection-status').innerHTML = 'Connection status: Connecting...';
+
+      // Enable the LED buttons
+      document.getElementById('led-on-button').disabled = false;
+      document.getElementById('led-off-button').disabled = false;
+      document.getElementById('close-button').disabled = false;
+      document.getElementById('led1-button').disabled = false;
+      document.getElementById('led2-button').disabled = false;
+
+      // Disable the connect button
+      document.getElementById('connect-button').disabled = true;
+
+
+      // Set the connection status when the web socket is open
+      websocket.onopen = function () {
+        document.getElementById('connection-status').innerHTML = 'Connection status: Connected';
+      };
+
+      websocket.onclose = function () {
+        document.getElementById('connection-status').innerHTML = 'Connection status: Not connected';
+
+        // Enable the connect button
+        document.getElementById('connect-button').disabled = false;
+
+        document.getElementById('arrival-status').innerHTML = '';
+
+        // Disable the LED buttons
+        document.getElementById('led-on-button').disabled = true;
+        document.getElementById('led-off-button').disabled = true;
+        document.getElementById('close-button').disabled = true;
+        document.getElementById('led1-button').disabled = true;
+        document.getElementById('led2-button').disabled = true;
+
+      };
+
+      // Set the lift arrival status when a message is received
+      websocket.onmessage = function (event) {
+        document.getElementById('arrival-status').innerHTML = `Lift arrival status: ${event.data}`;
+      };
+
+    }
+
+    async function sendMessage(message) {
+      // Send the message to the Raspberry Pi
+      websocket.send(message);
+
+      // Check the message
+      if (message == String.fromCharCode(27)) {
+        // Close the connection and the web socket
+        await websocket.close();
+      }
+      else if (message == '1') {
+        // Toggle the LED at GPIO 14
+        // (Add code here to send a message to the Raspberry Pi to toggle the LED at GPIO 14)
+      }
+      else if (message == '2') {
+        // Toggle the LED at GPIO 15
+        // (Add code here to send a message to the Raspberry Pi to toggle the LED at GPIO 15)
+      }
+
+
+      // Check the message
+      // if (message == String.fromCharCode(27)) {
+      //   // Close the connection and the web socket
+      //   await websocket.close();
+
+      // }
+    }
+  </script>
+</body>
+
+</html> -->
+
+
+<!-- <!DOCTYPE html>
+<html>
+
+  <head>
+    <title>ROBOT WEBSOCKET COMMUNICATION</title>
+  </head>
+
+  <body>
+    <h1>Key Press Sender</h1>
+    <p>Enter the public IP address and port number of the router, then press the "Connect" button to establish a
+      connection to the Raspberry Pi, then press any key on the keyboard to send it to the Raspberry Pi:</p>
+    <p>Public IP Address: <input type="text" id="ip-address" value="118.200.36.2"></p>
+    <p>Port Number: <input type="text" id="port-number" value="8000"></p>
+    <button id="connect-button" onclick="connect()">Connect</button>
+    <button id="close-button" onclick="sendMessage(String.fromCharCode(27))" disabled>Close Connection</button>
+    <br>
+    <br>
+    <p id="connection-status">Connection status: Not connected</p>
+    <p id="arrival-status"></p>
+
+
+    <script>
+      let websocket = null;
+
+      async function connect() {
+        // Get the IP address and port number from the input fields
+        let ipAddress = document.getElementById('ip-address').value;
+        let portNumber = document.getElementById('port-number').value;
+
+        // Connect to the Raspberry Pi's web socket server
+        websocket = new WebSocket(`ws://${ipAddress}:${portNumber}`);
+
+        // Set the connection status
+        document.getElementById('connection-status').innerHTML = 'Connection status: Connecting...';
+
+
+        // Disable the connect button
+        document.getElementById('connect-button').disabled = true;
+
+
+        // Set the connection status when the web socket is open
+        websocket.onopen = function () {
+          document.getElementById('connection-status').innerHTML = 'Connection status: Connected';
+        };
+
+        websocket.onclose = function () {
+          document.getElementById('connection-status').innerHTML = 'Connection status: Not connected';
+
+          // Enable the connect button
+          document.getElementById('connect-button').disabled = false;
+
+          document.getElementById('arrival-status').innerHTML = '';
+
+        };
+
+        // Set the lift arrival status when a message is received
+        websocket.onmessage = function (event) {
+          document.getElementById('arrival-status').innerHTML = `Lift arrival status: ${event.data}`;
+        };
+
+      }
+
+      async function sendMessage(message) {
+        // Send the message to the Raspberry Pi
+        websocket.send(message);
+
+        // Set up a promise to wait for the response from the Raspberry Pi
+        let responsePromise = new Promise(function(resolve, reject) {
+          websocket.onmessage = function(event) {
+            resolve(event.data);
+          };
+        });
+
+        // Wait for the response from the Raspberry Pi
+        let response = await responsePromise;
+
+        // Handle the response from the Raspberry Pi
+        if (response == "REQUEST CONFIRMED") {
+          document.getElementById('arrival-status').innerHTML = `Request confirmed`;
+        } else if (response == "NO SERVICE AVAILABLE") {
+          document.getElementById('arrival-status').innerHTML = `No service available`;
+        } else {
+          document.getElementById('arrival-status').innerHTML = `Unexpected response: ${response}`;
+        }
+
+        // Return the response from the Raspberry Pi
+        return response;
+      }
+    </script>
+  </body>
+</html> -->
+
+
+
+
+<!-- <!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Elevator Requester</title>
+  </head>
+
+  <body>
+    <h1>Elevator Requester</h1>
+    <p>Enter the public IP address and port number of the Raspberry Pi, then press the "Connect" button to establish a connection and request the elevator:</p>
+    <p>Public IP Address: <input type="text" id="ip-address" value="128.106.117.117"></p>
+    <p>Port Number: <input type="text" id="port-number" value="8000"></p>
+    <button id="connect-button" onclick="connect()">Connect</button>
+    <button id="request-button" onclick="requestElevator()" disabled>Request Elevator</button>
+    <br>
+    <br>
+    <p id="connection-status">Connection status: Not connected</p>
+    <p id="request-status"></p>
+
+
+    <script>
+      let websocket = null;
+
+      function connect() {
+        // Get the IP address and port number from the input fields
+        let ipAddress = document.getElementById('ip-address').value;
+        let portNumber = document.getElementById('port-number').value;
+
+        // Connect to the Raspberry Pi's web socket server
+        websocket = new WebSocket(`ws://${ipAddress}:${portNumber}`);
+
+        // Set the connection status
+        document.getElementById('connection-status').innerHTML = 'Connection status: Connecting...';
+
+        // Disable the connect button
+        document.getElementById('connect-button').disabled = true;
+
+        // Enable the request button when the web socket is open
+        websocket.onopen = function () {
+          document.getElementById('connection-status').innerHTML = 'Connection status: Connected';
+          document.getElementById('request-button').disabled = false;
+        };
+
+        websocket.onclose = function () {
+          document.getElementById('connection-status').innerHTML = 'Connection status: Not connected';
+
+          // Enable the connect button
+          document.getElementById('connect-button').disabled = false;
+
+          // Disable the request button
+          document.getElementById('request-button').disabled = true;
+
+          document.getElementById('request-status').innerHTML = '';
+        };
+
+        // Set the request status when a message is received
+        websocket.onmessage = function (event) {
+          document.getElementById('request-status').innerHTML = event.data;
+        };
+      }
+
+      function requestElevator() {
+        // Get the current floor, direction and destination floor
+        let currentFloor = document.getElementById('current-floor').value;
+        let direction = document.getElementById('direction').value;
+        let destinationFloor = document.getElementById('destination-floor').value;
+
+        // Create the request message
+        let request = `CURRENT_FLOOR: ${currentFloor}, DIRECTION: ${direction}, DESTINATION_FLOOR: ${destinationFloor}`;
+
+        // Send the request message to the Raspberry Pi
+        websocket.send(request);
+
+        // Set the request status
+        document.getElementById('request-status').innerHTML = 'Request sent';
+      }
+    </script>
+  </body>
+
+</html> -->
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ROBOT Request INTERFACE</title>
+</head>
+
+<body>
+  <h1>ROBOT REQUEST INTERFACE</h1>
+  <p>Enter the IP address and port number of the Raspberry Pi, then press the "Connect" button to establish a connection.</p>
+  <p>IP Address: <input type="text" id="ip-address" value="128.106.117.117"></p>
+  <p>Port Number: <input type="text" id="port-number" value="8000"></p>
+  <button id="connect-button" onclick="connect()">Connect</button>
+  <button id="disconnect-button" onclick="disconnect()" disabled>Disconnect</button>
+  <br>
+  <br>
+  <p id="connection-status">Connection Status: Not Connected</p>
+
+  <form id="message-form" onsubmit="sendMessage(event)">
+    <p>
+      Message: <input type="text" id="message-input" disabled>
+      <button type="submit" id="send-button" disabled>Send</button>
+    </p>
+  </form>
+
+  <p id="waiting-status"></p>
+  <p id="response-status"></p>
+
+  <script>
+    let websocket = null;
+    let waitingForResponse = false;
+
+    function connect() {
+      let ipAddress = document.getElementById('ip-address').value;
+      let portNumber = document.getElementById('port-number').value;
+
+      // Connect to the Raspberry Pi's web socket server
+      websocket = new WebSocket(`ws://${ipAddress}:${portNumber}`);
+
+      // Set the connection status
+      document.getElementById('connection-status').innerHTML = 'Connection status: Connecting...';
+      // Disable the connect button
+      document.getElementById('connect-button').disabled = true;
+
+      // Set the connection status when the web socket is open
+      websocket.onopen = function () {
+        document.getElementById('connection-status').innerHTML = 'Connection status: Connected';
+        // Enable the message input and send button
+        document.getElementById('message-input').disabled = false;
+        document.getElementById('send-button').disabled = false;
+        // Enable the disconnect button
+        document.getElementById('disconnect-button').disabled = false;
+      };
+
+      websocket.onclose = function () {
+        document.getElementById('connection-status').innerHTML = 'Connection status: Not connected';
+        // Disable the message input and send button
+        document.getElementById('message-input').disabled = true;
+        document.getElementById('send-button').disabled = true;
+        // Disable the disconnect button
+        document.getElementById('disconnect-button').disabled = true;
+        document.getElementById('connect-button').disabled = false;
+      };
+
+      websocket.onmessage = function (event) {
+        let message = event.data;
+        if (waitingForResponse) {
+          document.getElementById('waiting-status').innerHTML = '';
+          document.getElementById('response-status').innerHTML = `Received response: ${message}`;
+          waitingForResponse = false;
+        }
+      };
+    }
+
+    function disconnect() {
+      // Close the connection and the web socket
+      websocket.close();
+    }
+
+    function sendMessage(event) {
+      event.preventDefault();
+      let message = document.getElementById('message-input').value;
+      waitingForResponse = true;
+      document.getElementById('waiting-status').innerHTML = 'Waiting for response...';
+      document.getElementById('response-status').innerHTML = '';
+      document.getElementById('message-input').value = '';
+      websocket.send(message);
+    }
+  </script>
+</body>
+</html>
+
+
+  <!-- //   function requestElevator() {
+  //     // Send the elevator request message to the Raspberry Pi
+  //     let currentFloor = document.getElementById('current-floor').value;
+  //     let direction = document.getElementById('direction').value;
+  //     let destinationFloor = document.getElementById('destination-floor').value;
+  //     let requestMessage = `CURRENT_FLOOR:${currentFloor},DIRECTION:${direction},DESTINATION_FLOOR:${destinationFloor}`;
+  //     websocket.send(requestMessage);
+  //     // Disable the request elevator button
+  //     document.getElementById('request-elevator-button').disabled = true;  
+  //     // Enable the disconnect button
+  //     document.getElementById('disconnect-button').disabled = false;
+
+  //     // Listen for messages from the Raspberry Pi
+  //     websocket.onmessage = function (event) {
+  //     let message = event.data;
+
+  //     if (message == "REQUEST_CONFIRMED") {
+  //       // Update the elevator status
+  //       document.getElementById('elevator-status').innerHTML = 'Lift arrived and door opened.';
+  //       // Send door opened confirmation message
+  //       websocket.send("DOOR_OPENED_CONFIRMED");
+  //       // Update the door status
+  //       document.getElementById('door-status').innerHTML = 'Waiting for robot to enter...';
+
+  //       // Listen for robot entered lift message
+  //       websocket.onmessage = function (event) {
+  //         let message = event.data;
+
+  //         if (message == "ENTERED_LIFT") {
+  //           // Update the door status
+  //           document.getElementById('door-status').innerHTML = 'Door closed.';
+
+  //           // Send robot entered confirmation message
+  //           websocket.send("ROBOT_ENTERED_CONFIRM");
+
+  //           // Listen for destination reached message
+  //           websocket.onmessage = function (event) {
+  //             let message = event.data;
+
+  //             if (message == "DESTINATION_REACHED_DOOR_OPENED") {
+  //               // Update the elevator status
+  //               document.getElementById('elevator-status').innerHTML = 'Destination reached and door opened.';
+
+  //               // Send robot out of lift message
+  //               websocket.send("ROBOT_OUT_OF_LIFT");
+
+  //               // Listen for service completed confirmation message
+  //               websocket.onmessage = function (event) {
+  //                 let message = event.data;
+
+  //                 if (message == "SERVICE_COMPLETED_CONFIRMED") {
+  //                   // Update the elevator status
+  //                   document.getElementById('elevator-status').innerHTML = 'Service completed.';
+
+  //                   // Disable the disconnect button
+  //                   document.getElementById('disconnect-button').disabled = true;
+
+  //                   // Enable the request elevator button
+  //                   document.getElementById('request-elevator-button').disabled = false;
+  //                 }
+  //               }
+  //             }
+  //           }
+  //         }
+  //       }
+  //     } else if (message == "NO_SERVICE_AVAILABLE") {
+  //       // Update the elevator status
+  //       document.getElementById('elevator-status').innerHTML = 'No service available.';
+
+  //       // Disable the disconnect button
+  //       document.getElementById('disconnect-button').disabled = true;
+
+  //       // Enable the request elevator button
+  //       document.getElementById('request-elevator-button').disabled = false;
+  //     }
+  // }; -->
+
+
